@@ -1,8 +1,8 @@
 import os, subprocess, time, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-STREAM_KEY = os.environ.get("cd7g-1u66-hgfs-ghbh-6yge")
-VIDEO_ID = "https://drive.google.com/file/d/1TK7WyqJ2uh_8Y7wBaxTIBBQGD0MpxhB4/view?usp=sharing"
+STREAM_KEY = os.environ.get("STREAM_KEY")
+VIDEO_ID = "1TK7wqyJ2uh_8Y7mBaxIIBBQGD0MpxhB4"
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
