@@ -6,7 +6,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Live")
+        self.wfile.write(b"Live Running")
     def do_HEAD(self):
         self.send_response(200)
         self.end_headers()
@@ -18,13 +18,7 @@ threading.Thread(target=run_server, daemon=True).start()
 print("Downloading video...", flush=True)
 os.system("pip install -q gdown==4.7.1")
 os.system(f"gdown --id {VIDEO_ID} -O video.mp4")
-print(f"File exists: {os.path.exists('video.mp4')}", flush=True)
-if not os.path.exists('video.mp4'):
-    os.system(f"gdown https://drive.google.com/uc?id={VIDEO_ID} -O video.mp4 --fuzzy")
-    print(f"Retry: {os.path.exists('video.mp4')}", flush=True)
-if not os.path.exists('video.mp4'):
-    print("FATAL: Still private!", flush=True)
-    time.sleep(1000)
+print(f"Exists: {os.path.exists('video.mp4')} Size: {os.path.getsize('video.mp4') if os.path.exists('video.mp4') else 0}", flush=True)
 print("Starting FFmpeg...", flush=True)
 while True:
     try:
