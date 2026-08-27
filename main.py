@@ -1,39 +1,43 @@
-import os, subprocess, time, threading, requests
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import os, subprocess, time, threading
+from flask import Flask
 
-STREAM_KEY = os.environ.get("STREAM_KEY")
-VIDEO_ID = "1TK7WyqJ2uh_8Y7wBaxTIBBQGD0MpxhB4"
+app = Flask(__name__)
 
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Live")
-    def log_message(self, *a): return
-    def do_HEAD(self):
-        self.send_response(200)
-        self.end_headers()
+@app.route('/')
+def home():
+    return "Live Streaming is Running!"
 
-def run_server():
-    HTTPServer(('0.0.0.0', int(os.environ.get("PORT", 10000))), Handler).serve_forever()
-threading.Thread(target=run_server, daemon=True).start()
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
 
-def dl(id, dest):
-    if os.path.exists(dest) and os.path.getsize(dest) > 1_000_000: return
-    URL = "https://drive.google.com/uc?export=download"
-    s = requests.Session()
-    r = s.get(URL, params={'id': id}, stream=True)
-    token = next((v for k,v in r.cookies.items() if k.startswith('download_warning')), None)
-    if token: r = s.get(URL, params={'id': id, 'confirm': token}, stream=True)
-    with open(dest, "wb") as f:
-        for c in r.iter_content(32768):
-            if c: f.write(c)
+def run_stream():
+    while True:
+        try:
+            key = os.environ.get("STREAM_KEY")
+            if not key:
+                print("No STREAM_KEY!")
+                time.sleep(10)
+                continue
+            
+            url = os.getenv("VIDEO_URL", "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4")
+            
+            print("Starting 1440p copy stream...")
+            cmd = [
+                "ffmpeg", "-re", "-stream_loop", "-1",
+                "-i", url,
+                "-c:v", "copy",  # No re-encode = original 1440p quality!
+                "-c:a", "aac", "-b:a", "128k",
+                "-f", "flv",
+                f"rtmp://a.rtmp.youtube.com/live2/{key}"
+            ]
+            subprocess.run(cmd)
+            print("FFmpeg ended, restarting in 5s...")
+            time.sleep(5)
+        except Exception as e:
+            print(f"Error: {e}")
+            time.sleep(5)
 
-dl(VIDEO_ID, "video.mp4")
-print("Streaming original quality (copy) - 1440p", flush=True)
-
-while True:
-    # COPY = Original 1440p quality, no CPU, no low quality!
-    cmd = f'ffmpeg -re -stream_loop -1 -i video.mp4 -c copy -f flv rtmp://a.rtmp.youtube.com/live2/{STREAM_KEY}'
-    subprocess.run(cmd, shell=True)
-    time.sleep(2)
+if __name__ == "__main__":
+    threading.Thread(target=run_web, daemon=True).start()
+    run_stream()
