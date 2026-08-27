@@ -17,13 +17,13 @@ def run_server():
 threading.Thread(target=run_server, daemon=True).start()
 print("Downloading video...", flush=True)
 os.system("pip install -q gdown==4.7.1")
-os.system(f"gdown {VIDEO_ID} -O video.mp4")
+os.system(f"gdown --id {VIDEO_ID} -O video.mp4")
 print(f"File exists: {os.path.exists('video.mp4')}", flush=True)
 if not os.path.exists('video.mp4'):
-    os.system(f"gdown https://drive.google.com/uc?id={VIDEO_ID} -O video.mp4")
-    print(f"Retry exists: {os.path.exists('video.mp4')}", flush=True)
+    os.system(f"gdown https://drive.google.com/uc?id={VIDEO_ID} -O video.mp4 --fuzzy")
+    print(f"Retry: {os.path.exists('video.mp4')}", flush=True)
 if not os.path.exists('video.mp4'):
-    print("FATAL: Make Drive public!", flush=True)
+    print("FATAL: Still private!", flush=True)
     time.sleep(1000)
 print("Starting FFmpeg...", flush=True)
 while True:
