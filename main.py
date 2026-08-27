@@ -23,15 +23,11 @@ if not os.path.exists('video.mp4'):
     os.system(f"gdown https://drive.google.com/uc?id={VIDEO_ID} -O video.mp4")
     print(f"Retry exists: {os.path.exists('video.mp4')}", flush=True)
 if not os.path.exists('video.mp4'):
-    print("FATAL: Make Drive file public Anyone with link!", flush=True)
+    print("FATAL: Make Drive public!", flush=True)
     time.sleep(1000)
 print("Starting FFmpeg...", flush=True)
 while True:
     try:
-        if not STREAM_KEY:
-            print("ERROR: No STREAM_KEY!", flush=True)
-            time.sleep(10)
-            continue
         cmd = f'ffmpeg -re -stream_loop -1 -i video.mp4 -c:v libx264 -preset veryfast -b:v 1500k -maxrate 1500k -bufsize 3000k -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -f flv rtmp://a.rtmp.youtube.com/live2/{STREAM_KEY}'
         subprocess.run(cmd, shell=True)
     except Exception as e:
